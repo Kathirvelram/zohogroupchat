@@ -1,4 +1,6 @@
 ﻿  Main.cpp
-C:\Users\karthik\OneDrive\Desktop\SOCKET\AUTH_GROUP_CHAT\AUTHENICATION CLIENT\Main.cpp(119,7): warning C4102: 'std': unreferenced label
-C:\Users\karthik\OneDrive\Desktop\SOCKET\AUTH_GROUP_CHAT\AUTHENICATION CLIENT\Main.cpp(94): warning C4715: 'user_details_check': not all control paths return a value
-  AUTHENICATION CLIENT.vcxproj -> C:\Users\karthik\OneDrive\Desktop\SOCKET\AUTH_GROUP_CHAT\AUTHENICATION CLIENT\x64\Debug\AUTHENICATION CLIENT.exe
+  TCPclient.cpp
+C:\Users\karthik\SOCKET\AUTH_GROUP_CHAT\AUTHENICATION CLIENT\TCPclient.cpp(95,52): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+  Generating Code...
+C:\Users\karthik\SOCKET\AUTH_GROUP_CHAT\AUTHENICATION CLIENT\Main.cpp(86): warning C4715: 'user_details_check': not all control paths return a value
+  AUTHENICATION CLIENT.vcxproj -> C:\Users\karthik\SOCKET\AUTH_GROUP_CHAT\AUTHENICATION CLIENT\x64\Debug\AUTHENICATION CLIENT.exe
