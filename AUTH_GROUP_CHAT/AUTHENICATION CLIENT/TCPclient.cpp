@@ -68,16 +68,22 @@ void TCPClient::threadRecv() {
 			std::cout << string(buf, 0, bytesReceived) << std::endl;
 
 		}
+		if (bytesReceived == 0)
+		{
+			const char *buff = buf + '@';
+			send(serverSocket, buff, 4096, 0);
+		}
 
 	}
 }
 
-void TCPClient::connectSock() {
+void TCPClient::connectSock(std::string usernamee ) {
 
 	//If !initWinsock -> return false. 
 
 	serverSocket = createSocket();
-
+	const char* username = usernamee.c_str();
+	cout << username << "mm"<<endl;
 	int connResult = connect(serverSocket, (sockaddr*)&hint, sizeof(hint));
 	if (connResult == SOCKET_ERROR) {
 		cout << "Error: can't connect to server." << endl;
@@ -85,8 +91,27 @@ void TCPClient::connectSock() {
 		WSACleanup();
 		return;
 	}
-
+	else
+	{
+		int a=send(serverSocket, username, strlen(username), 0);
+		cout << "username inside send " << username << endl;
+		if (a <0)
+		{
+			cout << "username not send" << endl;
+		}
+		else if(a==0)
+		{
+			cout << "connection closed" << endl;
+		}
+		else if (a > 0)
+		{
+			cout << "send username" << endl;
+		}
+		cout << "connected to the server" << endl;
+	}
 }
+
+
 
 void TCPClient::sendMsg(string txt) {
 
