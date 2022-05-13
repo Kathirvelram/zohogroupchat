@@ -5,15 +5,18 @@
 #include<fstream>
 #include"msg_add.h"
 #include"linkedlist.h"
+//#define "_CRT_SECURE_NO_WARNINGS"
+#pragma warning(disable:4996)
 const int MAX_BUFFER_SIZE = 4096;			//Constant value for the buffer size = where we will store the data received.
 #include<map>
 using namespace std;
 int sendcheck;
 string sendstatus,missinguser;
 msg *c;
+string shareusername(string username);
+
 class Clients
 {
-
 public:
 	string temp;
 	map<SOCKET, string>a;
@@ -42,9 +45,10 @@ public:
 			if (itr->first != Clientsocket)
 			{
 				sendcheck=send(itr->first, buf, strlen(buf), 0);
-				if (sendcheck < 0)
+				if (sendcheck<=0)
 				{
-					remove(temp,buf,Clientsocket);
+					remove(temp,buf,itr->first);
+					
 				}
 				else if (sendcheck > 0)
 				{
@@ -57,6 +61,7 @@ public:
 	void remove(string sender,string buf, SOCKET Clientsocket)
 	{
 		sendstatus = "noo";
+		cout << "send status no" << endl;
 		for (auto itr = a.begin(); itr != a.end(); ++itr) {
 			if (itr->first == Clientsocket)
 			{
@@ -68,6 +73,7 @@ public:
 		closesocket(Clientsocket);
 	}
 };
+
 Clients clientt;
 //TCPServer::TCPServer() { }
 
@@ -150,7 +156,7 @@ void TCPServer::run() {
 		FD_ZERO(&master);																//Empty file file descriptor. 
 
 		FD_SET(listeningSocket, &master);												//Add listening socket to file descriptor. 
-		string word, filename,user,temp;
+		string word, filename, user, temp;
 		int c = 0;
 		while (true) {
 
@@ -163,7 +169,7 @@ void TCPServer::run() {
 				if (sock == listeningSocket) {											//Case 1: accept new connection.
 					SOCKET client = accept(listeningSocket, nullptr, nullptr);	//Accept incoming connection & identify it as a new client. 
 					int flag = 0;
-					int aaa=recv(client, buf,strlen(buf), 0);
+					int aaa = recv(client, buf, strlen(buf), 0);
 					//cout << aaa<<endl;
 
 					int ll = strlen(buf);
@@ -173,8 +179,8 @@ void TCPServer::run() {
 						bufd = bufd + buf[i];
 					}
 					//cout << bufd<<endl;
-				
-					
+
+
 					if (aaa == 0)
 					{
 
@@ -185,11 +191,11 @@ void TCPServer::run() {
 						cout << "username not recevied";
 					}
 					//cout << bufd<< endl;
-					std::string clientid ;
+					std::string clientid;
 					fstream file;
 					filename = "user_check.txt";
 					file.open(filename.c_str());
-		
+
 					if (aaa > 0)
 					{
 						while (file >> word)
@@ -211,7 +217,7 @@ void TCPServer::run() {
 									break;
 								}
 							}
-							
+
 							if (user == bufd)
 							{
 								clientt.insertt(client, user);
@@ -220,7 +226,7 @@ void TCPServer::run() {
 							}
 							//templength = templength + temp.length();
 						}
-						
+
 						if (flag == 1)
 						{
 							//clientt.traverse(client, user);
@@ -236,89 +242,79 @@ void TCPServer::run() {
 						}
 					}
 
-						//cout << clientid<<endl;
+					//cout << clientid<<endl;
 
-						
-					
-						//Log connection on server side. 
+
+
+					//Log connection on server side. 
 
 				}
-				else {																	//Case 2: receive a msg.	
+				else 
+				{																	//Case 2: receive a msg.	
 					int c = 0;
 					ZeroMemory(buf, MAX_BUFFER_SIZE);								//Clear the buffer before receiving data. 
 					int bytesReceived = recv(sock, buf, MAX_BUFFER_SIZE, 0);//Receive data into buf & put it into bytesReceived. 
-					
+
 
 					//c->addmsg(user1, msg);
 
 					//std::cout << buf << std::endl;
-					if (bytesReceived <= 0) {	//No msg = drop client. 
+					if (bytesReceived<= 0)
+					{	//No msg = drop client. 
 						closesocket(sock);
 						FD_CLR(sock, &master);	//Remove connection from file director.
 					}
-					else {	//Send msg to other clients & not listening socket. 
+					else if(sock!=listeningSocket)
+					{	//Send msg to other clients & not listening socket. 
 
 
-						for (int i = 0; i < master.fd_count; i++) {			//Loop through the sockets. 
+						for (int i = 0; i < master.fd_count; i++)
+						{			//Loop through the sockets. 
 							SOCKET outSock = master.fd_array[i];
 							int flag = 0;
-							if (outSock != listeningSocket) {
+							if (outSock != listeningSocket)
+							{
 
-								if (outSock == sock) {		//If the current socket is the one that sent the message:
+								if (outSock == sock)
+								{		//If the current socket is the one that sent the message:
 									std::string msgSent = "Message delivered.";
 									send(outSock, msgSent.c_str(), msgSent.size() + 1, 0);	//Notify the client that the msg was delivered. 	
 
 								}
-								else {	//If the current sock is not the sender -> it should receive the msg. 
-									string bufd1;
-									for (int i = 0; i <bytesReceived; i++)
-									{
-										bufd1= bufd1 + buf[i];
-									}
-									if (int i = 0; i < bytesRecieved; i++)
-									{
-										if (bufd1[i] == '@')
-										{
-											flag = 1;
-											break;
-										}
-									}
-									if(flag==1)
-									{ 
+								else
+								{	//If the current sock is not the sender -> it should receive the msg. 
+									
+									
+										
+								}
 
-									send(outSock, username, bytesReceived, 0);
-
-									}
-									else
-									{
-										clientt.sendd(sock, buf);
-									}
-
+								}
 							}
+						clientt.sendd(sock, buf);
+							std::cout << std::string(buf, 0,bytesReceived) << std::endl;			//Log the message on the server side. 
+
 						}
 
-						std::cout << std::string(buf, 0, bytesReceived) << std::endl;			//Log the message on the server side. 
-
 					}
-
 				}
 			}
-		}
 
+
+		}
 
 	}
 
-}
 
 
 //Function to send the message to a specific client. 
-void TCPServer::sendMsg(int clientSocket, std::string msg) {
+
+void TCPServer::sendMsg(int clientSocket, std::string msg)
+{
 
 	send(clientSocket, msg.c_str(), msg.size() + 1, 0);
 	cout << "hello im from sendmsg class" << endl;
 
 }
-
 
 void TCPServer::cleanupWinsock() {
 
