@@ -16,7 +16,7 @@ public:
 	~TCPClient();
 	bool initWinsock();
 	int user_details_check();
-	void connectSock();
+	void connectSock(std::string username);
 	void sendMsg(std::string txt);
 	std::thread recvThread;
 	void threadRecv();
