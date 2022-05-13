@@ -1,36 +1,126 @@
-#pragma once
+#include "TCPClient.h"
+#include <iostream>
 #include <string>
 #include <thread>
-#include <WS2tcpip.h>
-#pragma comment (lib, "ws2_32.lib")
 
-class TCPClient;
+using namespace std;
 
-typedef void(*MessageReceivedHandler)(std::string msg);
 
-class TCPClient
+//When we create the client, we do not want the thread to run & try to receive data from the server until 
+TCPClient::TCPClient()
 {
-public:
-
-	TCPClient();
-	~TCPClient();
-	bool initWinsock();
-	int user_details_check();
-	void connectSock(std::string username);
-	void sendMsg(std::string txt);
-	std::thread recvThread;
-	void threadRecv();
-	std::string username;
-	bool joinChat = true;
+	recvThreadRunning = false;
+}
 
 
-private:
-	SOCKET createSocket();
-	std::string serverIP = "127.0.0.1";
-	int serverPort = 54010;
-	sockaddr_in hint;
-	SOCKET serverSocket;		//This is the socket we will connect to. 
-	bool recvThreadRunning;
+TCPClient::~TCPClient()
+{
+	closesocket(serverSocket);
+	WSACleanup();
+	if (recvThreadRunning) {
+		recvThreadRunning = false;
+		recvThread.join();	//Destroy safely to thread. 
+	}
+}
 
 
-};
+bool TCPClient::initWinsock() {
+
+	WSADATA data;
+	WORD ver = MAKEWORD(2, 2);
+	int wsResult = WSAStartup(ver, &data);
+	if (wsResult != 0) {
+		cout << "Error: can't start Winsock." << endl;
+		return false;
+	}
+	return true;
+}
+
+SOCKET TCPClient::createSocket() {
+
+	SOCKET sock = socket(AF_INET, SOCK_STREAM, 0);
+	if (sock == INVALID_SOCKET) {
+		cout << "Error: can't create socket." << endl;
+		WSACleanup();
+		return -1;
+	}
+
+	//Specify data for hint structure. 
+	hint.sin_family = AF_INET;
+	hint.sin_port = htons(serverPort);
+	inet_pton(AF_INET, serverIP.c_str(), &hint.sin_addr);
+
+	return sock;
+
+}
+
+void TCPClient::threadRecv() {
+
+	recvThreadRunning = true;
+	while (recvThreadRunning) {
+
+		char buf[4096];
+		ZeroMemory(buf, 4096);
+
+		int bytesReceived = recv(serverSocket, buf, 4096, 0);
+		if (bytesReceived > 0) {			//If client disconnects, bytesReceived = 0; if error, bytesReceived = -1;
+
+			std::cout << string(buf, 0, bytesReceived) << std::endl;
+
+		}
+		if (bytesReceived == 0)
+		{
+			const char *buff = buf + '@';
+			send(serverSocket, buff, 4096, 0);
+		}
+
+	}
+}
+
+void TCPClient::connectSock(std::string usernamee ) {
+
+	//If !initWinsock -> return false. 
+
+	serverSocket = createSocket();
+	const char* username = usernamee.c_str();
+	cout << username << "mm"<<endl;
+	int connResult = connect(serverSocket, (sockaddr*)&hint, sizeof(hint));
+	if (connResult == SOCKET_ERROR) {
+		cout << "Error: can't connect to server." << endl;
+		closesocket(serverSocket);
+		WSACleanup();
+		return;
+	}
+	else
+	{
+		int a=send(serverSocket, username, strlen(username), 0);
+		cout << "username inside send " << username << endl;
+		if (a <0)
+		{
+			cout << "username not send" << endl;
+		}
+		else if(a==0)
+		{
+			cout << "connection closed" << endl;
+		}
+		else if (a > 0)
+		{
+			cout << "send username" << endl;
+		}
+		cout << "connected to the server" << endl;
+	}
+}
+
+
+
+void TCPClient::sendMsg(string txt) {
+
+	if (!txt.empty() && serverSocket != INVALID_SOCKET) {
+
+		send(serverSocket, txt.c_str(), txt.size() + 1, 0);
+
+		//It wouldn't work with the previous version bc while we were constantly listening for received msgs, we would keep caling this fct. 
+		//This fct would send the message & try to handle the receiving too. It would get stuck while waiting for a received msg. 
+	}
+
+}
