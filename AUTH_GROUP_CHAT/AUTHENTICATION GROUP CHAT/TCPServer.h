@@ -3,6 +3,7 @@
 #include <string>
 #include <WS2tcpip.h>
 #pragma comment (lib, "ws2_32.lib")
+#include<fstream>
 
 class TCPServer;
 
@@ -19,6 +20,7 @@ public:
 	bool initWinsock();
 	void run();
 	void cleanupWinsock();
+
 
 
 private:
