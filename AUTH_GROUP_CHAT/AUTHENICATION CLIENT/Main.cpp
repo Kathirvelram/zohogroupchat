@@ -5,15 +5,34 @@
 #include<fstream>
 #include <WS2tcpip.h>
 #include<map>
+#include <exception>
+#include <filesystem>
 #pragma comment (lib, "ws2_32.lib")
-
+namespace fs = std::filesystem;
 using namespace std;
 int user_details_check();
+void filetransfer();
 struct userdetails
 {
 	string user_name;
 	string password;
 };
+void filetransfer()
+{
+	fs::path sourceFile = "C:\\Users\\karthik\\SOCKET\\AUTH_GROUP_CHAT\\AUTHENICATION CLIENT\\user_check.txt";
+	fs::path targetParent = "C:\\Users\\karthik\\SOCKET\\AUTH_GROUP_CHAT\\AUTHENTICATION GROUP CHAT";
+	auto target = targetParent / sourceFile.filename(); // sourceFile.filename() returns "sourceFile.ext".
+
+	try // If you want to avoid exception handling, then use the error code overload of the following functions.
+	{
+		fs::create_directories(targetParent); // Recursively create target directory if not existing.
+		fs::copy_file(sourceFile, target, fs::copy_options::overwrite_existing);
+	}
+	catch (std::exception& e) // Not using fs::filesystem_error since std::bad_alloc can throw too.  
+	{
+		std::cout << e.what();
+	}
+}
 
 int user_details_check(string username,string userpassword)
 {
@@ -23,9 +42,10 @@ int user_details_check(string username,string userpassword)
 
 	// filename of the file
 	filename = "user_check.txt";
-
-	// opening file
 	file.open(filename.c_str());
+	// opening file
+
+	
 	string user=username;
 	string pass=userpassword;
 	string temp;
@@ -61,8 +81,8 @@ int user_details_check(string username,string userpassword)
 			}
 		}
 		//cout << username<<endl;
-		//cout << user <<endl<< username<<endl;
-		//cout << pass <<endl<< userpassword << endl;
+		//cout << user <<endl;
+		//cout << pass << endl;
 		int usercheck = user.compare(username);
 		int passcheck = pass.compare(userpassword);
 		//cout << usercheck << " " << passcheck << endl;
@@ -104,10 +124,10 @@ void signup()
 		}
 		else
 		{
-			cout << "already logged in by using this username" << endl;
+			cout << "username already exist" << endl;
 			goto s;
 		}
-		//cout << "success" << endl;
+		cout << "successfully signed up" << endl;
 		
 	
 }
@@ -120,14 +140,14 @@ void login()
 	string username, password;
 	int flag = 0;
 	int c=0;
-	cout << "loo" << endl;
+	//cout << "loo" << endl;
 	while (true) {
 		cout << "enter username: " << endl;
 		cin >> username;
 		cout << "enter password: " << endl;
 		cin >> password;
 		a = user_details_check(username, password);
-		//	cout << a << endl;
+		//cout << a << endl;
 		if (a == 0)
 		{
 			cout << "wrong credientials" << endl;
@@ -152,7 +172,7 @@ void login()
 	{
 		if (client->initWinsock()) {
 
-			client->connectSock();
+			client->connectSock(username);
 
 			client->recvThread = thread([&] {
 				client->threadRecv();
@@ -167,13 +187,13 @@ void login()
 			client->username = username;
 			if (client->joinChat == false) {
 				std::ostringstream ss;
-				ss << client->username << ": " << msg;
+				ss << msg;
 				messageToSend = ss.str();
 			}
 			else if (client->joinChat == true) {
-				std::ostringstream ss;
-				ss << client->username << " joined the chat!";
-				messageToSend = ss.str();
+				//std::ostringstream ss;
+				//ss << client->username << " joined the chat!";
+				//messageToSend = ss.str();
 				client->joinChat = false;
 			}
 			client->sendMsg(messageToSend);
@@ -186,15 +206,26 @@ void login()
 
 
 int main() {
-	char user_choice;
-	
+	char user_choice,user_choice1;
+		
 		cout << "enter the choice : s (for signup), l (for login)" << endl;
 		cin >> user_choice;
 		switch (user_choice)
 		{
 		case 's':
 			signup();
-			break;
+			filetransfer();
+			cout << "do u want to login (y/n):" << endl;
+			cin >> user_choice1;
+			if (user_choice1 == 'y')
+			{
+				login();
+				break;
+			}
+			else if (user_choice1== 'n')
+			{
+				break;
+			}
 		case 'l':
 			login();
 			break;
