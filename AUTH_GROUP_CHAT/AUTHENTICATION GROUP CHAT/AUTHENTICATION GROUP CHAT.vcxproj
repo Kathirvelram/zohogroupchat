@@ -144,7 +144,13 @@
     <ClCompile Include="SERVER.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="linkedlist.h" />
+    <ClInclude Include="msg_add.h" />
     <ClInclude Include="TCPServer.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="msg.txt" />
+    <Text Include="user_check.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

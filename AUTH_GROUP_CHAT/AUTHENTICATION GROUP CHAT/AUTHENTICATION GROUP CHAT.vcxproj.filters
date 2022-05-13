@@ -26,5 +26,19 @@
     <ClInclude Include="TCPServer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="linkedlist.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="msg_add.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="msg.txt">
+      <Filter>Resource Files</Filter>
+    </Text>
+    <Text Include="user_check.txt">
+      <Filter>Resource Files</Filter>
+    </Text>
   </ItemGroup>
 </Project>
